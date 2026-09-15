@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard | CourierPro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-dark bg-primary px-4">
+        <span class="navbar-brand fw-bold">CourierPro Admin</span>
+        <a href="admin_login.html" class="btn btn-outline-light btn-sm">Logout</a>
+    </nav>
+
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card bg-white p-3 border-0 shadow-sm">
+                    <h6 class="text-muted">Quick Actions</h6>
+                    <a href="admin_payments.html" class="btn btn-warning w-100 mt-2">Verify New Payments</a>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <div class="card shadow border-0 p-4">
+                    <h4 class="fw-bold mb-4">Update Shipment Progress</h4>
+                    <form action="UpdateStatusServlet" method="POST">
+                        <div class="mb-3">
+                            <label class="form-label">Tracking ID</label>
+                            <input type="text" name="trackingId" class="form-control" placeholder="e.g., CR-1525" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">New Status</label>
+                                <select name="status" class="form-select">
+                                    <option value="Shipment Picked Up">Shipment Picked Up</option>
+                                    <option value="In Transit">In Transit</option>
+                                    <option value="Arrived at Sorting Center">Arrived at Sorting Center</option>
+                                    <option value="Out for Delivery">Out for Delivery</option>
+                                    <option value="Delivered">Delivered</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Current Location</label>
+                                <input type="text" name="location" class="form-control" placeholder="e.g., Mumbai Hub" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success fw-bold px-5">Update Tracking</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

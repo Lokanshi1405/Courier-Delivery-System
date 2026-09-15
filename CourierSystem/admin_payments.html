@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CourierPro Admin | Payment Verification & Status</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Inter', sans-serif; }
+        .admin-nav { background: #212529; color: white; padding: 15px 30px; font-weight: bold; }
+        .card-custom { border: none; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .status-badge { border-radius: 30px; padding: 5px 12px; font-size: 0.8rem; font-weight: bold; }
+        .status-pending { background-color: #fef1c7; color: #856404; }
+        .status-verified { background-color: #d1e7dd; color: #0f5132; }
+        .status-out { background-color: #cfe2f3; color: #084298; }
+        .details-row { font-size: 0.85rem; }
+    </style>
+</head>
+<body onload="fetchAdminData()">
+
+    <div class="admin-nav d-flex justify-content-between align-items-center mb-4">
+        <span><i class="bi bi-truck-flatbed me-2"></i>CourierPro Admin Dashboard</span>
+        <div class="d-flex gap-3">
+            <a href="admin_dashboard.html" class="btn btn-outline-light btn-sm">Home</a>
+            <a href="index.jsp" class="btn btn-sm text-white">Main Site</a>
+        </div>
+    </div>
+
+    <div class="container-fluid px-4">
+        <div class="card card-custom p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="fw-bold mb-0">Parcel Management Center</h4>
+                <button class="btn btn-dark" onclick="fetchAdminData()"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+            </div>
+
+            <div id="loadingIndicator" class="text-center py-5">
+                <div class="spinner-border text-dark" role="status"></div>
+                <p class="text-muted mt-2">Loading parcel database...</p>
+            </div>
+
+            <div class="accordion" id="parcelListAccordion">
+                </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        async function fetchAdminData() {
+            document.getElementById('loadingIndicator').style.display = 'block';
+            document.getElementById('parcelListAccordion').innerHTML = '';
+            try {
+                // Fetch data from existing DatabaseConfig structure
+                const response = await fetch('GetAdminPaymentsServlet'); 
+                const parcels = await response.json();
+                document.getElementById('loadingIndicator').style.display = 'none';
+
+                if (parcels.length === 0) {
+                    document.getElementById('parcelListAccordion').innerHTML = '<div class="alert alert-info text-center">No parcels currently registered.</div>';
+                    return;
+                }
+
+                parcels.forEach((parcel, index) => {
+                    const statusClass = parcel.status === "Pending Verification" ? "status-pending" : "status-verified";
+                    const isVerified = parcel.status !== "Pending Verification";
+                    
+                    // Main table row structure
+                    const parcelRow = `
+                        <div class="accordion-item card card-custom mb-3 border">
+                            <h2 class="accordion-header" id="heading${index}">
+                                <button class="accordion-button collapsed bg-white text-dark py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${index}" aria-expanded="false" aria-controls="collapse${index}">
+                                    <div class="w-100 d-flex justify-content-between align-items-center pe-3">
+                                        <div class="text-start">
+                                            <code class="text-primary fw-bold fs-6">${parcel.tracking_id}</code><br>
+                                            <small class="text-muted">Sender: ${parcel.sender_name}</small>
+                                        </div>
+                                        <div class="text-center">
+                                            <span class="fs-6">${parcel.product_type} - ${parcel.amount} &#8377;</span>
+                                        </div>
+                                        <div class="text-end d-flex align-items-center gap-3">
+                                            <span class="status-badge ${statusClass}">${parcel.status}</span>
+                                            <i class="bi bi-chevron-right text-muted"></i>
+                                        </div>
+                                    </div>
+                                </button>
+                            </h2>
+                            <div id="collapse${index}" class="accordion-collapse collapse" aria-labelledby="heading${index}" data-bs-parent="#parcelListAccordion">
+                                <div class="accordion-body p-4 bg-light">
+                                    <div class="row details-row mb-4">
+                                        <div class="col-md-4 mb-3 mb-md-0 border-end">
+                                            <h6 class="fw-bold"><i class="bi bi-person-circle text-primary"></i> Sender Details</h6>
+                                            <ul class="list-unstyled ms-3">
+                                                <li>Name: ${parcel.sender_name}</li>
+                                                <li>Phone: ${parcel.sender_phone}</li>
+                                                <li>Address: ${parcel.sender_address}</li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-4 mb-3 mb-md-0 border-end">
+                                            <h6 class="fw-bold"><i class="bi bi-box-seam text-primary"></i> Receiver Details</h6>
+                                            <ul class="list-unstyled ms-3">
+                                                <li>Name: ${parcel.receiver_name}</li>
+                                                <li>Phone: ${parcel.receiver_phone}</li>
+                                                <li>Address: ${parcel.receiver_address}</li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <h6 class="fw-bold"><i class="bi bi-receipt text-primary"></i> Product & Payment</h6>
+                                            <ul class="list-unstyled ms-3">
+                                                <li>Type: ${parcel.product_type}</li>
+                                                <li>Weight: ${parcel.product_weight}</li>
+                                                <li>Amount: ${parcel.amount} &#8377;</li>
+                                                <li>UTR Number: ${parcel.transaction_no}</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-white p-3 rounded border">
+                                        <form action="UpdateStatusServlet" method="POST" class="row g-2">
+                                            <input type="hidden" name="tracking_id" value="${parcel.tracking_id}">
+                                            
+                                            <div class="col-md-3">
+                                                <label class="form-label small text-muted">Update Status</label>
+                                                <select class="form-select" name="status" id="statusSelect${index}" onchange="updateDotValue(${index})">
+                                                    <option value="Verified" ${parcel.status === "Verified" ? "selected" : ""}>Verified</option>
+                                                    <option value="Shipped" ${parcel.status === "Shipped" ? "selected" : ""}>Shipped</option>
+                                                    <option value="Out for Delivery" ${parcel.status === "Out for Delivery" ? "selected" : ""}>Out for Delivery</option>
+                                                    <option value="Delivered" ${parcel.status === "Delivered" ? "selected" : ""}>Delivered</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="col-md-3">
+                                                <label class="form-label small text-muted">Current Stop (Location)</label>
+                                                <input type="text" class="form-select" name="location" value="${parcel.location}" placeholder="e.g., Delhi Hub">
+                                            </div>
+                                            
+                                            <div class="col-md-3">
+                                                <label class="form-label small text-muted">Move Live Dot (Percentage)</label>
+                                                <select class="form-select" name="dot_percent" id="dotSelect${index}">
+                                                    <option value="0" ${parcel.dot_percent == 0 ? "selected" : ""}>0% (Pickup)</option>
+                                                    <option value="25" ${parcel.dot_percent == 25 ? "selected" : ""}>25% (Shipped)</option>
+                                                    <option value="50" ${parcel.dot_percent == 50 ? "selected" : ""}>50% (Midway)</option>
+                                                    <option value="75" ${parcel.dot_percent == 75 ? "selected" : ""}>75% (Out for Del.)</option>
+                                                    <option value="100" ${parcel.dot_percent == 100 ? "selected" : ""}>100% (Delivered)</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="col-md-3 d-flex align-items-end">
+                                                <button type="submit" class="btn btn-primary w-100 fw-bold"><i class="bi bi-save me-1"></i> Update Parcel</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                    document.getElementById('parcelListAccordion').insertAdjacentHTML('beforeend', parcelRow);
+                });
+            } catch (error) {
+                document.getElementById('loadingIndicator').innerHTML = '<div class="alert alert-danger">Error fetching parcel list. Make sure database is connected.</div>';
+            }
+        }
+
+        // Automatic logic to pre-select dot percentage based on status
+        function updateDotValue(index) {
+            const statusSelect = document.getElementById('statusSelect' + index);
+            const dotSelect = document.getElementById('dotSelect' + index);
+            
+            switch (statusSelect.value) {
+                case 'Verified': dotSelect.value = '0'; break;
+                case 'Shipped': dotSelect.value = '25'; break;
+                case 'Out for Delivery': dotSelect.value = '75'; break;
+                case 'Delivered': dotSelect.value = '100'; break;
+                default: dotSelect.value = '0'; break;
+            }
+        }
+    </script>
+</body>
+</html>

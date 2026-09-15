@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CourierPro | Secure Payment</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root { --primary-dark: #212529; --success-green: #198754; }
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .qr-card { border-radius: 20px; overflow: hidden; }
+        /* Professional frame for your original QR */
+        .qr-holder { background: #fff; padding: 15px; border: 2px dashed #dee2e6; border-radius: 15px; display: inline-block; transition: all 0.3s ease; }
+        .qr-holder:hover { border-color: var(--success-green); }
+        .price-text { font-size: 2rem; color: var(--success-green); font-weight: 800; }
+        .timer-box { font-size: 0.9rem; font-weight: bold; color: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="card qr-card shadow-lg border-0 mx-auto" style="max-width: 500px;">
+            <div class="card-header bg-dark text-white text-center py-3">
+                <h5 class="mb-0 text-uppercase tracking-wider">Secure Checkout</h5>
+            </div>
+            
+            <div class="card-body p-4 text-center">
+                <div class="bg-light rounded-3 p-3 mb-4 border">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-muted">Shipment Type:</span>
+                        <span class="fw-bold text-dark" id="prod_type">General</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1 small">
+                        <span class="text-muted">Metrics:</span>
+                        <span id="calc_details" class="text-dark">0kg | 0km</span>
+                    </div>
+                    <hr class="my-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fw-bold">Total Payable:</span>
+                        <span class="price-text" id="total_amount_display">&#8377;0</span>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <p class="mb-2 fw-bold text-secondary text-uppercase small">Scan QR with GPay, PhonePe, or Paytm</p>
+                    <div class="qr-holder mb-2">
+                        <img id="dynamic_qr" src="my_qr_code.png" class="img-fluid" alt="UPI QR" style="width: 250px; height: 250px; object-fit: contain;">
+                    </div>
+                    <div class="timer-box mt-2" id="session-timer">Expires in: 05:00</div>
+                </div>
+                
+                <form action="BookingServlet" method="POST" id="finalForm">
+                    <div id="hiddenInputs"></div>
+                    
+                    <div class="text-start mb-4">
+                        <label class="form-label fw-bold small">Transaction / UTR Number (12 Digits)</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-primary text-primary"><i class="bi bi-hash"></i></span>
+                            <input type="text" name="utr" class="form-control form-control-lg border-primary shadow-sm" 
+                                   placeholder="1234XXXXXXXX" pattern="\d{12}" 
+                                   maxlength="12" required>
+                        </div>
+                        <div class="form-text mt-2 small">Check your app's transaction history for the 12-digit reference.</div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success btn-lg w-100 fw-bold shadow">
+                        COMPLETE BOOKING
+                    </button>
+                </form>
+            </div>
+            
+            <div class="card-footer bg-white text-center py-3 border-0">
+                <a href="booking.html" class="text-decoration-none text-muted small">&#8592; Edit Shipment Details</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const bookingData = JSON.parse(localStorage.getItem('bookingData'));
+
+        if (!bookingData) {
+            alert("Session Expired. Redirecting to booking page.");
+            window.location.href = 'booking.html';
+        } else {
+            // Update UI with existing data
+            document.getElementById('total_amount_display').innerHTML = `&#8377;${bookingData.amount}`;
+            document.getElementById('prod_type').innerText = bookingData.product_type;
+            document.getElementById('calc_details').innerText = `${bookingData.product_weight}kg | ${bookingData.distance}km`;
+
+            // Removed the UPI dynamic link generation to keep your original image visible
+
+            // Mapping Hidden Inputs for the Servlet
+            const formContainer = document.getElementById('hiddenInputs');
+            Object.keys(bookingData).forEach(key => {
+                const hiddenField = document.createElement('input');
+                hiddenField.type = 'hidden';
+                hiddenField.name = key;
+                hiddenField.value = bookingData[key];
+                formContainer.appendChild(hiddenField);
+            });
+        }
+
+        // Countdown Timer
+        let time = 300;
+        const timerLabel = document.getElementById('session-timer');
+        const timerInterval = setInterval(() => {
+            if(time <= 0) {
+                clearInterval(timerInterval);
+                timerLabel.innerText = "Session Expired!";
+                return;
+            }
+            time--;
+            let mins = Math.floor(time / 60);
+            let secs = time % 60;
+            timerLabel.innerText = `Expires in: ${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }, 1000);
+    </script>
+</body>
+</html>

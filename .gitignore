@@ -1,0 +1,4 @@
+CourierSystem/WEB-INF/classes/
+*.class
+*.log
+.DS_Store
