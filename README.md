@@ -14,11 +14,11 @@ A full-stack Java Web Application for managing parcel bookings, real-time delive
 
 | Booking & Payment Confirmation | Live Interactive Tracking |
 | :---: | :---: |
-| ![Booking Screen](TrackingIDgeneration.png) | ![Live Tracking Screen](Tracking.png) |
+| ![Booking Screen](ScreenShots/TrackingIDgeneration.png) | ![Live Tracking Screen](ScreenShots/Tracking.png) |
 
 | Admin Management Dashboard |
 | :---: |
-| ![Admin Panel](AdminDashboard_paymentVerification.png) |
+| ![Admin Panel](ScreenShots/AdminDashboard_paymentVerification.png) |
 
 ---
 
